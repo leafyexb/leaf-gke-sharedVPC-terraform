@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ilb-svc-onesvc-west1
+  annotations:
+    networking.gke.io/load-balancer-type: "Internal"
+    cloud.google.com/neg: '{"exposed_ports": {"80":{"name": "standalone-neg-west1"}}}'
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster
+  selector:
+    app: store
+  ports:
+  - name: tcp-port
+    protocol: TCP
+    port: 80
+    targetPort: 8080
