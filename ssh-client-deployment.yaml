@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh-client
+  labels:
+    app: ssh-enabled
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ssh-enabled
+  template:
+    metadata:
+      labels:
+        app: ssh-enabled
+    spec:
+      containers:
+      - name: ubuntu-ssh
+        image: ubuntu:latest
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            set -e
+            apt-get update
+            apt-get install -y openssh-server
+            useradd -m sshuser
+            echo "sshuser:YourSecurePassword" | chpasswd
+            mkdir -p /home/sshuser/.ssh
+            chmod 700 /home/sshuser/.ssh
+            echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config
+            service ssh start
+            sleep infinity
+        ports:
+        - containerPort: 22
+          name: ssh
+      nodeSelector:
+        cloud.google.com/gke-nodepool: primary-node-pool
+        kubernetes.io/arch: amd64
+      resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
